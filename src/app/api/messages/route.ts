@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 // In-memory storage for messages (for testing/demo purposes)
-let messages: { id: number; chatId: string; text: string }[] = [];
+const messages: { id: number; chatId: string; text: string }[] = [];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
