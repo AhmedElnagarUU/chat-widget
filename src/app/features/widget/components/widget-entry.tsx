@@ -2,8 +2,15 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import ChatWidget from "./ChatWidget";
 
+// Extend the Window interface
+declare global {
+  interface Window {
+    mountChatWidget: (chatId: string, apiUrl: string) => void;
+  }
+}
+
 // Expose mount function globally
-(window as any).mountChatWidget = (chatId: string, apiUrl: string) => {
+window.mountChatWidget = (chatId: string, apiUrl: string) => {
   const div = document.createElement("div");
   div.id = "chat-widget-root";
   document.body.appendChild(div);
