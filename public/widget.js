@@ -1,111 +1,144 @@
+(function () {
+  document.addEventListener("DOMContentLoaded", () => {
+    // --- Create chat button (toggle) ---
+    const chatButton = document.createElement("div");
+    chatButton.id = "chat-widget-button";
+    chatButton.innerHTML = "💬"; 
+    chatButton.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #007bff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 9999;
+      transition: transform 0.2s ease;
+    `;
+    chatButton.onmouseenter = () => (chatButton.style.transform = "scale(1.1)");
+    chatButton.onmouseleave = () => (chatButton.style.transform = "scale(1)");
+    document.body.appendChild(chatButton);
 
-window.onload = function() {
-  // Launcher button
-  const btn = document.createElement('div');
-  btn.textContent = '💬';
-  btn.style.width = '60px';
-  btn.style.height = '60px';
-  btn.style.background = 'linear-gradient(135deg,#ff6b6b,#f06595)';
-  btn.style.color = 'white';
-  btn.style.fontSize = '24px';
-  btn.style.display = 'flex';
-  btn.style.alignItems = 'center';
-  btn.style.justifyContent = 'center';
-  btn.style.borderRadius = '50%';
-  btn.style.position = 'fixed';
-  btn.style.bottom = '20px';
-  btn.style.right = '20px';
-  btn.style.cursor = 'pointer';
-  btn.style.boxShadow = '0 6px 16px rgba(0,0,0,.3)';
-  document.body.appendChild(btn);
+    // --- Create chat widget ---
+    const container = document.createElement("div");
+    container.id = "chat-widget-root";
+    container.style.cssText = `
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 320px;
+      height: 400px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: #fff;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 9998;
+      transition: all 0.3s ease;
+    `;
+    document.body.appendChild(container);
 
-  // Chat panel
-  const panel = document.createElement('div');
-  panel.style.width = '320px';
-  panel.style.height = '420px';
-  panel.style.background = '#fff';
-  panel.style.borderRadius = '12px';
-  panel.style.overflow = 'hidden';
-  panel.style.position = 'fixed';
-  panel.style.bottom = '90px';
-  panel.style.right = '20px';
-  panel.style.display = 'none';
-  panel.style.flexDirection = 'column';
-  panel.style.boxShadow = '0 8px 24px rgba(0,0,0,.25)';
+    // --- Messages area ---
+    const messagesDiv = document.createElement("div");
+    messagesDiv.style.flex = "1";
+    messagesDiv.style.overflowY = "auto";
+    messagesDiv.style.padding = "10px";
+    messagesDiv.style.color = "black";
+    container.appendChild(messagesDiv);
 
-  // Header
-  const header = document.createElement('div');
-  header.textContent = '✨ Chat Widget';
-  header.style.background = 'linear-gradient(135deg,#845ef7,#5c7cfa)';
-  header.style.color = 'white';
-  header.style.padding = '10px';
-  header.style.fontWeight = 'bold';
-  header.style.textAlign = 'center';
-  panel.appendChild(header);
+    // --- Input area ---
+    const inputDiv = document.createElement("div");
+    inputDiv.style.display = "flex";
+    inputDiv.style.borderTop = "1px solid #ccc";
+    inputDiv.style.background = "#f9f9f9";
+    container.appendChild(inputDiv);
 
-  // Messages area
-  const body = document.createElement('div');
-  body.style.flex = '1';
-  body.style.padding = '10px';
-  body.style.overflowY = 'auto';
-  body.style.background = '#f8f9fa';
-  panel.appendChild(body);
+    const input = document.createElement("input");
+    input.style.flex = "1";
+    input.style.padding = "10px";
+    input.style.color = "black";
+    input.style.border = "none";
+    input.style.outline = "none";
+    input.placeholder = "Type a message...";
+    inputDiv.appendChild(input);
 
-  // Input area
-  const inputWrap = document.createElement('div');
-  inputWrap.style.display = 'flex';
-  inputWrap.style.borderTop = '1px solid #ddd';
-  inputWrap.style.background = '#fff';
+    const button = document.createElement("button");
+    button.style.padding = "10px 15px";
+    button.style.background = "#007bff";
+    button.style.color = "white";
+    button.style.border = "none";
+    button.style.cursor = "pointer";
+    button.textContent = "➤";
+    inputDiv.appendChild(button);
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'Type a message...';
-  input.style.flex = '1';
-  input.style.border = 'none';
-  input.style.padding = '10px';
-  input.style.outline = 'none';
+    // --- Toggle widget open/close ---
+    chatButton.addEventListener("click", () => {
+      container.style.display =
+        container.style.display === "none" ? "flex" : "none";
+    });
 
-  const sendBtn = document.createElement('button');
-  sendBtn.textContent = '➤';
-  sendBtn.style.border = 'none';
-  sendBtn.style.background = 'linear-gradient(135deg,#51cf66,#38d9a9)';
-  sendBtn.style.color = 'white';
-  sendBtn.style.padding = '0 16px';
-  sendBtn.style.cursor = 'pointer';
-  sendBtn.style.fontSize = '18px';
+    // --- API connection ---
+    const apiUrl = "https://YOUR-NGROK-URL.ngrok-free.app"; // 👈 put your ngrok URL
 
-  inputWrap.appendChild(input);
-  inputWrap.appendChild(sendBtn);
-  panel.appendChild(inputWrap);
+    // --- Send message ---
+    async function sendMessage() {
+      if (!input.value) return;
 
-  document.body.appendChild(panel);
+      // 1️⃣ Append user message
+      const userDiv = document.createElement("div");
+      userDiv.textContent = input.value;
+      userDiv.style.margin = "5px 0";
+      userDiv.style.padding = "6px 10px";
+      userDiv.style.borderRadius = "8px";
+      userDiv.style.maxWidth = "80%";
+      userDiv.style.background = "#d1e7dd";
+      userDiv.style.alignSelf = "flex-end";
+      messagesDiv.appendChild(userDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-  // Toggle chat
-  btn.onclick = () => {
-    panel.style.display = (panel.style.display === 'none') ? 'flex' : 'none';
-  };
+      const textToSend = input.value;
+      input.value = "";
 
-  // Add message
-  function addMsg(txt){
-    if(!txt) return;
-    const msg = document.createElement('div');
-    msg.textContent = txt;
-    msg.style.padding = '8px 12px';
-    msg.style.margin = '6px 0';
-    msg.style.borderRadius = '12px';
-    msg.style.maxWidth = '75%';
-    msg.style.color = 'white';
-    msg.style.alignSelf = 'flex-end';
-    msg.style.background = 'linear-gradient(135deg,#339af0,#4dabf7)';
-    body.appendChild(msg);
-    body.scrollTop = body.scrollHeight;
-  }
+      // 2️⃣ Send to API and get AI reply
+      try {
+        const res = await fetch(`${apiUrl}/api/messages`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true" // 👈 skip ngrok warning
+          },
+          body: JSON.stringify({ text: textToSend }),
+        });
+        const data = await res.json();
 
-  // Send function
-  function sendMsg(){
-    addMsg(input.value.trim());
-    input.value = '';
-  }
-  sendBtn.onclick = sendMsg;
-  input.onkeydown = e => { if(e.key==='Enter'){e.preventDefault();sendMsg();} };
-};
+        // 3️⃣ Append AI reply
+        const aiDiv = document.createElement("div");
+        aiDiv.textContent = data.reply;
+        aiDiv.style.margin = "5px 0";
+        aiDiv.style.padding = "6px 10px";
+        aiDiv.style.borderRadius = "8px";
+        aiDiv.style.maxWidth = "80%";
+        aiDiv.style.background = "#f1f1f1";
+        aiDiv.style.alignSelf = "flex-start";
+        messagesDiv.appendChild(aiDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      } catch (err) {
+        console.error("Failed to send message", err);
+      }
+    }
+
+    button.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  });
+})();
