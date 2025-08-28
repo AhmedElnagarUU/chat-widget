@@ -3,7 +3,7 @@
     // --- Create chat button (toggle) ---
     const chatButton = document.createElement("div");
     chatButton.id = "chat-widget-button";
-    chatButton.innerHTML = "💬"; 
+    chatButton.innerHTML = "💬";
     chatButton.style.cssText = `
       position: fixed;
       bottom: 20px;
@@ -89,9 +89,14 @@
     // --- API connection ---
     const apiUrl = "https://YOUR-NGROK-URL.ngrok-free.app"; // 👈 put your ngrok URL
 
+    // --- Auto scroll to bottom ---
+    function scrollToBottom() {
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
     // --- Send message ---
     async function sendMessage() {
-      if (!input.value) return;
+      if (!input.value.trim()) return;
 
       // 1️⃣ Append user message
       const userDiv = document.createElement("div");
@@ -103,42 +108,58 @@
       userDiv.style.background = "#d1e7dd";
       userDiv.style.alignSelf = "flex-end";
       messagesDiv.appendChild(userDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      scrollToBottom();
 
       const textToSend = input.value;
       input.value = "";
 
-      // 2️⃣ Send to API and get AI reply
+      // 2️⃣ Append temporary loading (AI typing...)
+      const aiDiv = document.createElement("div");
+      aiDiv.textContent = "Typing...";
+      aiDiv.style.margin = "5px 0";
+      aiDiv.style.padding = "6px 10px";
+      aiDiv.style.borderRadius = "8px";
+      aiDiv.style.maxWidth = "80%";
+      aiDiv.style.background = "#f1f1f1";
+      aiDiv.style.alignSelf = "flex-start";
+      messagesDiv.appendChild(aiDiv);
+      scrollToBottom();
+
+      // Animate dots
+      let dots = 0;
+      const typingInterval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        aiDiv.textContent = "Typing" + ".".repeat(dots);
+      }, 500);
+
+      // 3️⃣ Send to API and replace loading with reply
       try {
         const res = await fetch(`${apiUrl}/api/messages`, {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true" // 👈 skip ngrok warning
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({ text: textToSend }),
         });
         const data = await res.json();
 
-        // 3️⃣ Append AI reply
-        const aiDiv = document.createElement("div");
-        aiDiv.textContent = data.reply;
-        aiDiv.style.margin = "5px 0";
-        aiDiv.style.padding = "6px 10px";
-        aiDiv.style.borderRadius = "8px";
-        aiDiv.style.maxWidth = "80%";
-        aiDiv.style.background = "#f1f1f1";
-        aiDiv.style.alignSelf = "flex-start";
-        messagesDiv.appendChild(aiDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        clearInterval(typingInterval);
+        aiDiv.textContent = data.reply || "⚠️ No response";
+        scrollToBottom();
       } catch (err) {
+        clearInterval(typingInterval);
+        aiDiv.textContent = "⚠️ Failed to connect";
         console.error("Failed to send message", err);
       }
     }
 
     button.addEventListener("click", sendMessage);
     input.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
     });
   });
 })();
