@@ -1,99 +1,111 @@
-(function () {
-  document.addEventListener("DOMContentLoaded", () => {
-    const API_KEY = "AIzaSyAwseOvx19kX9p8MMyiheOQEn9HfGvLwqw";
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-    // --- Chat button ---
-    const chatButton = document.createElement("div");
-    chatButton.innerHTML = "💬";
-    chatButton.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px;
-      width: 60px; height: 60px; border-radius: 50%;
-      background: #007bff; color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      z-index: 9999;
-    `;
-    document.body.appendChild(chatButton);
+window.onload = function() {
+  // Launcher button
+  const btn = document.createElement('div');
+  btn.textContent = '💬';
+  btn.style.width = '60px';
+  btn.style.height = '60px';
+  btn.style.background = 'linear-gradient(135deg,#ff6b6b,#f06595)';
+  btn.style.color = 'white';
+  btn.style.fontSize = '24px';
+  btn.style.display = 'flex';
+  btn.style.alignItems = 'center';
+  btn.style.justifyContent = 'center';
+  btn.style.borderRadius = '50%';
+  btn.style.position = 'fixed';
+  btn.style.bottom = '20px';
+  btn.style.right = '20px';
+  btn.style.cursor = 'pointer';
+  btn.style.boxShadow = '0 6px 16px rgba(0,0,0,.3)';
+  document.body.appendChild(btn);
 
-    // --- Chat box ---
-    const container = document.createElement("div");
-    container.style.cssText = `
-      position: fixed; bottom: 90px; right: 20px;
-      width: 320px; height: 400px;
-      display: none; flex-direction: column;
-      border: 1px solid #ccc; border-radius: 12px;
-      background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      overflow: hidden; z-index: 9998;
-    `;
-    document.body.appendChild(container);
+  // Chat panel
+  const panel = document.createElement('div');
+  panel.style.width = '320px';
+  panel.style.height = '420px';
+  panel.style.background = '#fff';
+  panel.style.borderRadius = '12px';
+  panel.style.overflow = 'hidden';
+  panel.style.position = 'fixed';
+  panel.style.bottom = '90px';
+  panel.style.right = '20px';
+  panel.style.display = 'none';
+  panel.style.flexDirection = 'column';
+  panel.style.boxShadow = '0 8px 24px rgba(0,0,0,.25)';
 
-    const messagesDiv = document.createElement("div");
-    messagesDiv.style.cssText = "flex:1; overflow-y:auto; padding:10px; color:black;";
-    container.appendChild(messagesDiv);
+  // Header
+  const header = document.createElement('div');
+  header.textContent = '✨ Chat Widget';
+  header.style.background = 'linear-gradient(135deg,#845ef7,#5c7cfa)';
+  header.style.color = 'white';
+  header.style.padding = '10px';
+  header.style.fontWeight = 'bold';
+  header.style.textAlign = 'center';
+  panel.appendChild(header);
 
-    const inputDiv = document.createElement("div");
-    inputDiv.style.cssText = "display:flex; border-top:1px solid #ccc; background:#f9f9f9;";
-    container.appendChild(inputDiv);
+  // Messages area
+  const body = document.createElement('div');
+  body.style.flex = '1';
+  body.style.padding = '10px';
+  body.style.overflowY = 'auto';
+  body.style.background = '#f8f9fa';
+  panel.appendChild(body);
 
-    const input = document.createElement("input");
-    input.style.cssText = "flex:1; padding:10px; border:none; outline:none; color:black;";
-    input.placeholder = "Type a message...";
-    inputDiv.appendChild(input);
+  // Input area
+  const inputWrap = document.createElement('div');
+  inputWrap.style.display = 'flex';
+  inputWrap.style.borderTop = '1px solid #ddd';
+  inputWrap.style.background = '#fff';
 
-    const sendBtn = document.createElement("button");
-    sendBtn.textContent = "➤";
-    sendBtn.style.cssText = "padding:10px 15px; background:#007bff; color:white; border:none; cursor:pointer;";
-    inputDiv.appendChild(sendBtn);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Type a message...';
+  input.style.flex = '1';
+  input.style.border = 'none';
+  input.style.padding = '10px';
+  input.style.outline = 'none';
 
-    // --- Toggle ---
-    chatButton.onclick = () => {
-      container.style.display = container.style.display === "none" ? "flex" : "none";
-    };
+  const sendBtn = document.createElement('button');
+  sendBtn.textContent = '➤';
+  sendBtn.style.border = 'none';
+  sendBtn.style.background = 'linear-gradient(135deg,#51cf66,#38d9a9)';
+  sendBtn.style.color = 'white';
+  sendBtn.style.padding = '0 16px';
+  sendBtn.style.cursor = 'pointer';
+  sendBtn.style.fontSize = '18px';
 
-    // --- Add message helper ---
-    function addMessage(text, sender = "ai") {
-      const div = document.createElement("div");
-      div.textContent = text;
-      div.style.margin = "5px 0";
-      div.style.padding = "6px 10px";
-      div.style.borderRadius = "8px";
-      div.style.maxWidth = "80%";
-      div.style.alignSelf = sender === "me" ? "flex-end" : "flex-start";
-      div.style.background = sender === "me" ? "#d1e7dd" : "#f1f1f1";
-      messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      return div;
-    }
+  inputWrap.appendChild(input);
+  inputWrap.appendChild(sendBtn);
+  panel.appendChild(inputWrap);
 
-    // --- Send to Gemini ---
-    async function sendMessage() {
-      if (!input.value) return;
-      const userText = input.value;
-      input.value = "";
+  document.body.appendChild(panel);
 
-      addMessage(userText, "me");
+  // Toggle chat
+  btn.onclick = () => {
+    panel.style.display = (panel.style.display === 'none') ? 'flex' : 'none';
+  };
 
-      // Temporary "..." while waiting
-      const loadingDiv = addMessage("...", "ai");
+  // Add message
+  function addMsg(txt){
+    if(!txt) return;
+    const msg = document.createElement('div');
+    msg.textContent = txt;
+    msg.style.padding = '8px 12px';
+    msg.style.margin = '6px 0';
+    msg.style.borderRadius = '12px';
+    msg.style.maxWidth = '75%';
+    msg.style.color = 'white';
+    msg.style.alignSelf = 'flex-end';
+    msg.style.background = 'linear-gradient(135deg,#339af0,#4dabf7)';
+    body.appendChild(msg);
+    body.scrollTop = body.scrollHeight;
+  }
 
-      try {
-        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: userText }] }]
-          })
-        });
-        const data = await res.json();
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "⚠️ No response";
-        loadingDiv.textContent = reply;
-      } catch (err) {
-        loadingDiv.textContent = "⚠️ Error: " + err.message;
-      }
-    }
-
-    sendBtn.onclick = sendMessage;
-    input.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
-  });
-})();
+  // Send function
+  function sendMsg(){
+    addMsg(input.value.trim());
+    input.value = '';
+  }
+  sendBtn.onclick = sendMsg;
+  input.onkeydown = e => { if(e.key==='Enter'){e.preventDefault();sendMsg();} };
+};
