@@ -87,7 +87,7 @@
     });
 
     // --- API connection ---
-    const apiUrl = "https://YOUR-NGROK-URL.ngrok-free.app"; // 👈 put your ngrok URL
+    const apiUrl = document.currentScript.getAttribute("data-api-url"); // 👈 put your ngrok URL
 
     // --- Auto scroll to bottom ---
     function scrollToBottom() {
